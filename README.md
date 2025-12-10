@@ -1,6 +1,7 @@
 Chủ đề nhóm: Máy đo CO và bụi
 
 Nhóm sinh viên thực hiện: Trần Quang Khánh (22KTMT1), Lê Xuân Nam (22KTMT1), Hồ Anh Nguyên (22KTMT1), Phan Lê Minh (22KTMT2)
+GVHD: Ths. Hồ Viết Việt
 
 Thành phần phần cứng: ESP32-C3 (vi xử lí trung tâm), cảm biến khí CO MQ2, cảm biến bụi PM2.5 GP2Y1010AU0F, LCD I2C, nút nhấn, tụ 220uF, điện trở hạn dòng, LED đơn (xanh và đỏ).
 
