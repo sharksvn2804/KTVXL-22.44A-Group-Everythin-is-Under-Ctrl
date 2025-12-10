@@ -188,13 +188,13 @@ void app_main(void) {
     esp_rmaker_config_t cfg = { .enable_time_sync = true };
     esp_rmaker_node_t *node = esp_rmaker_node_init(
         &cfg, "CO and PM2.5 monitor", "Sensor");
-    dev_mq2 = esp_rmaker_device_create("CO and PM2.5 monitor", "Sensor", NULL);
+    dev_mq2 = esp_rmaker_device_create("Máy đo CO và bụi PM2.5", "Sensor", NULL);
     esp_rmaker_device_add_bulk_cb(dev_mq2, bulk_write_cb, NULL);
     esp_rmaker_node_add_device(node, dev_mq2);
     // ---- Khởi tạo Param và thêm vào Rainmaker ----
-    param_ppm       = esp_rmaker_param_create("Nồng độ CO:", "ppm",
+    param_ppm       = esp_rmaker_param_create("Nồng độ CO (ppm):", "ppm",
                     esp_rmaker_float(0), PROP_FLAG_READ);
-    param_pm25      = esp_rmaker_param_create("Nồng độ PM 2.5:", "mg/m3",               
+    param_pm25      = esp_rmaker_param_create("Nồng độ PM 2.5 (mg/m³):", "mg/m3",               
                     esp_rmaker_float(0), PROP_FLAG_READ);
     param_power     = esp_rmaker_power_param_create(
                     ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
