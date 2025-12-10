@@ -1,15 +1,49 @@
-Chủ đề nhóm: Máy đo CO và bụi
+Chủ đề đề tài: Máy đo CO và bụi mịn PM2.5
 
-Nhóm sinh viên thực hiện: Trần Quang Khánh (22KTMT1), Lê Xuân Nam (22KTMT1), Hồ Anh Nguyên (22KTMT1), Phan Lê Minh (22KTMT2)
+Nhóm sinh viên thực hiện:
 
-GVHD: Ths. Hồ Viết Việt
+Trần Quang Khánh (22KTMT1)
 
-Thành phần phần cứng: ESP32-C3 (vi xử lí trung tâm), cảm biến khí CO MQ2, cảm biến bụi PM2.5 GP2Y1010AU0F, LCD I2C, nút nhấn, tụ 220uF, điện trở hạn dòng, LED đơn (xanh và đỏ).
+Lê Xuân Nam (22KTMT1)
 
-Hướng dẫn sử dụng (dành cho các thành viên trong nhóm và những ai muốn tải về thử):
-- Bước 1: Tải về và giải nén.
-- Bước 2: Đổi tên folder code thành example temperature_sensor (lí do: code này thay đổi từ 1 example có sẵn của ESP Rainmaker), sau đó copy folder đó.
-- Bước 3: Tìm folder esp-rainmaker và vào folder example.
-- Bước 4: Paste folder đó vào (nhớ chọn chế độ replace).
+Hồ Anh Nguyên (22KTMT1)
 
-Tags: GPIO, ADC, timer interrupt, hardware interrupt, wifi, bluetooth, NVS, ESP rainmaker, MQTT
+Phan Lê Minh (22KTMT2)
+
+GVHD: ThS. Hồ Viết Việt
+
+Thành phần phần cứng
+
+ESP32-C3 – Vi xử lý trung tâm
+
+Cảm biến khí CO MQ2
+
+Cảm biến bụi mịn PM2.5 GP2Y1010AU0F
+
+LCD I2C 16x2
+
+Nút nhấn
+
+Tụ điện 220 µF
+
+Điện trở hạn dòng
+
+LED đơn (xanh, đỏ)
+
+Hướng dẫn sử dụng (dành cho các thành viên trong nhóm và những ai muốn tải về thử)
+
+Tải project về và giải nén.
+
+Đổi tên thư mục chứa mã nguồn thành:
+example_temperature_sensor
+(Lý do: project này được sửa đổi từ example Temperature Sensor của ESP RainMaker)
+
+Mở thư mục esp-rainmaker/examples/ trong bộ SDK.
+
+Copy thư mục vừa đổi tên vào đây, chọn Replace khi được hỏi.
+
+Biên dịch và flash bằng idf.py build và idf.py flash monitor.
+
+Tags
+
+GPIO, ADC, Timer Interrupt, Hardware Interrupt, Wi-Fi, Bluetooth, NVS, ESP RainMaker, MQTT
