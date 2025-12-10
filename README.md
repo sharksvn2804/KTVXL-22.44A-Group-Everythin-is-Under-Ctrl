@@ -1,5 +1,5 @@
 Chủ đề nhóm: Máy đo CO và bụi
-SVTH: Trần Quang Khánh, Lê Xuân Nam, Hồ Anh Nguyên, Phan Lê Minh
+SVTH: Trần Quang Khánh (22KTMT1), Lê Xuân Nam (22KTMT1), Hồ Anh Nguyên (22KTMT1), Phan Lê Minh (22KTMT2)
 
 Thành phần phần cứng: ESP32-C3 (vi xử lí trung tâm), cảm biến khí CO MQ2, cảm biến bụi PM2.5 GP2Y1010AU0F, LCD I2C, nút nhấn, tụ 220uF, điện trở hạn dòng, LED đơn (xanh và đỏ).
 
