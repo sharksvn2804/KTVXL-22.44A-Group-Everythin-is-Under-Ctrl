@@ -17,8 +17,8 @@
 #define LED_MODE_PIN      2     // LED xanh - chế độ cảnh báo
 #define ALERT_BUTTON_PIN  18    // Nút GPIO18 để toggle alert mode từ button hoặc RainMaker
 // CO Alert Mode:
-#define CO_THRESHOLD      4.0   // ngưỡng cảnh báo CO (ppm)
-#define PM25_THRESHOLD    35.0  // ngưỡng cảnh báo PM2.5 (mg/m³)
+#define CO_THRESHOLD      9.5   // ngưỡng cảnh báo CO (ppm)
+#define PM25_THRESHOLD    0.15  // ngưỡng cảnh báo PM2.5 (mg/m³)
 
 // ==================== Functions ====================
 void app_driver_init(void);
