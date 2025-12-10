@@ -8,7 +8,7 @@ Thành phần phần cứng: ESP32-C3 (vi xử lí trung tâm), cảm biến kh�
 
 Hướng dẫn sử dụng (dành cho các thành viên trong nhóm và những ai muốn tải về thử):
 - Bước 1: Tải về và giải nén.
-- Bước 2: Đổi tên folder code thành example temperature_sensor (lí do code này thay đổi từ 1 example của ESP Rainmaker, sau đó copy folder đó.
+- Bước 2: Đổi tên folder code thành example temperature_sensor (lí do: code này thay đổi từ 1 example có sẵn của ESP Rainmaker), sau đó copy folder đó.
 - Bước 3: Tìm folder esp-rainmaker và vào folder example.
 - Bước 4: Paste folder đó vào (nhớ chọn chế độ replace).
 
