@@ -11,5 +11,7 @@ Hướng dẫn sử dụng (dành cho các thành viên trong nhóm và những 
 - Bước 2: Đổi tên folder code thành example temperature_sensor (lí do: code này thay đổi từ 1 example có sẵn của ESP Rainmaker), sau đó copy folder đó.
 - Bước 3: Tìm folder esp-rainmaker và vào folder example.
 - Bước 4: Paste folder đó vào (nhớ chọn chế độ replace).
-- 
+
+Ứng dụng: cảnh báo ngạt khí, báo cháy,...
+
 Tags: GPIO, ADC, timer interrupt, hardware interrupt, wifi, bluetooth, NVS, ESP rainmaker, MQTT
