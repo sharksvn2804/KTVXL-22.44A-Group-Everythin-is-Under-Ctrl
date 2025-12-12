@@ -139,34 +139,69 @@ static void report_timer_cb(void *arg) {
     lcd_put_cursor(1, 0);
     lcd_send_string("PM2.5: ");
     lcd_put_cursor(1, 7);
-    snprintf(bufpm25, sizeof(bufpm25), "%.2f    ", avg_pm25);
+    snprintf(bufpm25, sizeof(bufpm25), "%.3f    ", avg_pm25);
     lcd_send_string(bufpm25);
     // ---- Compute Rs/R0 ----
     uint16_t adc = adc1_get_raw(MQ2_CHANNEL);
     float Vout = (adc / 4095.0f) * 3.3f;
     float RS = RL_VALUE * (3.3f - Vout) / Vout;
     float ratio = RS / get_R0();
-    // ---- LED Warning (CO and PM2.5 threshold) ----
-    bool warning = ((avg_ppm > CO_THRESHOLD) || (avg_pm25 > PM25_THRESHOLD)) && alert_mode_enabled;
-    gpio_set_level(LED_WARNING_PIN, warning);
     // ---- Update RainMaker ----
     esp_rmaker_param_update_and_report(param_ppm,   esp_rmaker_float(avg_ppm));
     esp_rmaker_param_update_and_report(param_pm25,  esp_rmaker_float(avg_pm25));  // NEW
     esp_rmaker_param_update_and_report(param_power, esp_rmaker_bool(alert_mode_enabled));
     esp_rmaker_param_update_and_report(param_ratio, esp_rmaker_float(ratio));
-    // Status message (CO-based)
+    // Status message (CO-based + PM2.5-based)
     char status_msg[64];
-    if (avg_ppm > CO_THRESHOLD)
-        snprintf(status_msg, sizeof(status_msg), "CO vượt ngưỡng! Hãy cẩn thận.");
-    else
-        snprintf(status_msg, sizeof(status_msg), "CO an toàn. Không thành vấn đề.");
-    esp_rmaker_param_update_and_report(param_status, esp_rmaker_str(status_msg));
-    // Status message (PM2.5-based)
+    int co_level = 0;
+    if (avg_ppm < 4.5) {
+        snprintf(status_msg, sizeof(status_msg), "CO tốt.");
+        co_level = 0;
+    } else if (avg_ppm < 9.5) {
+        snprintf(status_msg, sizeof(status_msg), "CO trung bình.");
+        co_level = 1;
+    } else if (avg_ppm < 12.5) {
+        snprintf(status_msg, sizeof(status_msg), "CO không tốt.");
+        co_level = 2;
+    } else if (avg_ppm < 15.5) {
+        snprintf(status_msg, sizeof(status_msg), "CO xấu. Cẩn thận!");
+        co_level = 3;
+    } else {
+        snprintf(status_msg, sizeof(status_msg), "CO rất xấu! NGUY HIỂM!");
+        co_level = 4;
+    }
+    // NEW: PM2.5 Status Message
     char status2_msg[64];
-    if (avg_pm25 > PM25_THRESHOLD)
-        snprintf(status2_msg, sizeof(status_msg), "PM2.5 vượt ngưỡng! Hãy cẩn thận.");
-    else
-        snprintf(status2_msg, sizeof(status_msg), "PM2.5 an toàn. Không thành vấn đề.");
+    int pm_level = 0;
+    if (avg_pm25 < 12) {
+        snprintf(status2_msg, sizeof(status2_msg), "PM2.5 tốt.");
+        pm_level = 0;
+    } else if (avg_pm25 < 35.4) {
+        snprintf(status2_msg, sizeof(status2_msg), "PM2.5 an toàn.");
+        pm_level = 1;
+    }
+    else if (avg_pm25 < 55.4) {
+        snprintf(status2_msg, sizeof(status2_msg), "PM2.5 trung bình.");
+        pm_level = 2;
+    } else if (avg_pm25 < 150.4) {
+        snprintf(status2_msg, sizeof(status2_msg), "PM2.5 kém.");
+        pm_level = 3;
+    } else {
+        snprintf(status2_msg, sizeof(status2_msg), "PM2.5 rất xấu!");
+        pm_level = 4;
+    }
+    // Cảnh báo LED đỏ dựa trên mức độ nguy hiểm cao hơn:
+    int danger = (co_level > pm_level) ? co_level : pm_level;
+    if (alert_mode_enabled) {
+        int duty_table[] = {0, 255/16, 255/8, 255/4, 255};
+        ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty_table[danger]);
+        ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+    } else {
+        ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0);
+        ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+    }
+    // Cập nhật trạng thái CO và PM2.5:
+    esp_rmaker_param_update_and_report(param_status, esp_rmaker_str(status_msg));
     esp_rmaker_param_update_and_report(param25_status, esp_rmaker_str(status2_msg));
 }
 
@@ -247,4 +282,22 @@ void app_main(void) {
     esp_timer_handle_t rep_timer;
     esp_timer_create(&rep_args, &rep_timer);
     esp_timer_start_periodic(rep_timer, REPORT_INTERVAL_MS * 1000);
+    // ---- PWM ----
+    // Configure LEDC timer
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode = LEDC_MODE,
+        .duty_resolution = LEDC_DUTY_RES,
+        .timer_num = LEDC_TIMER,
+        .freq_hz = LEDC_FREQUENCY
+    };
+    ledc_timer_config(&ledc_timer);
+    // Configure LEDC channel
+    ledc_channel_config_t ledc_channel = {
+        .gpio_num = LED_WARNING_PIN,
+        .speed_mode = LEDC_MODE,
+        .channel = LEDC_CHANNEL,
+        .timer_sel = LEDC_TIMER,
+        .duty = 0
+    };
+    ledc_channel_config(&ledc_channel);
 }
