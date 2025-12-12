@@ -67,7 +67,7 @@ float read_PM25_ppm(void) {
     uint16_t adc_raw = sum / 10;
     gpio_set_level(GP2Y_LED_POWER, 0); // Tắt LED
     float V_out = (adc_raw / 4095.0f) * 3.3f;
-    float dust_density = 0.17 * V_out - 0.03; // mg/m³ (có thể hiệu chỉnh hệ số 0.17)
+    float dust_density = 0.17 * V_out * 1000; // ug/m³ (có thể hiệu chỉnh hệ số 0.17)
     if (dust_density < 0) dust_density = 0;
     return dust_density;
 }
