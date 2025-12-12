@@ -14,4 +14,4 @@ Hướng dẫn sử dụng (dành cho các thành viên trong nhóm và những 
 
 Ứng dụng: cảnh báo ngạt khí, báo cháy,...
 
-Tags: GPIO, ADC, timer interrupt, hardware interrupt, wifi, bluetooth, NVS, ESP rainmaker, MQTT
+Tags: GPIO, ADC, timer interrupt, hardware interrupt, PWM, wifi, bluetooth, NVS, ESP rainmaker, MQTT
