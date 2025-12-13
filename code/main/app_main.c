@@ -179,8 +179,7 @@ static void report_timer_cb(void *arg) {
     } else if (avg_pm25 < 35.4) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 an toàn.");
         pm_level = 1;
-    }
-    else if (avg_pm25 < 55.4) {
+    } else if (avg_pm25 < 55.4) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 trung bình.");
         pm_level = 2;
     } else if (avg_pm25 < 150.4) {
@@ -196,9 +195,18 @@ static void report_timer_cb(void *arg) {
         int duty_table[] = {0, 255/16, 255/8, 255/4, 255};
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty_table[danger]);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+        if (danger >= 3) {
+            gpio_set_level(BUZZ_PIN, 1); // Bật Buzz
+            esp_rom_delay_us(100000);
+            gpio_set_level(BUZZ_PIN, 0); // Tắt Buzz
+            esp_rom_delay_us(100000);
+        } else {
+            gpio_set_level(BUZZ_PIN, 0); // Tắt Buzz
+        }
     } else {
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+        gpio_set_level(BUZZ_PIN, 0);
     }
     // Cập nhật trạng thái CO và PM2.5:
     esp_rmaker_param_update_and_report(param_status, esp_rmaker_str(status_msg));
