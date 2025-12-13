@@ -192,7 +192,7 @@ static void report_timer_cb(void *arg) {
     // Cảnh báo LED đỏ dựa trên mức độ nguy hiểm cao hơn:
     int danger = (co_level > pm_level) ? co_level : pm_level;
     if (alert_mode_enabled) {
-        int duty_table[] = {0, 255/16, 255/8, 255/4, 255};
+        int duty_table[4] = {0, 255/16, 255/8, 255/4, 255};
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty_table[danger]);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
         if (danger >= 3) {
