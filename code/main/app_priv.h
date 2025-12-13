@@ -16,6 +16,7 @@
 #define GP2Y_LED_POWER    19    // LED của GP2Y dùng để kích hoạt cảm biến bụi (dùng cho GP2Y1010AU0F)
 #define LED_MODE_PIN      2     // LED xanh - chế độ cảnh báo
 #define ALERT_BUTTON_PIN  18    // Nút GPIO18 để toggle alert mode từ button hoặc RainMaker
+#define BUZZ_PIN          6     // Buzz cảnh báo
 // GPIO cho PWM:
 #define LED_WARNING_PIN   3     // LED đỏ 1 - cảnh báo khi CO hoặc PM2.5
 #define LEDC_CHANNEL      LEDC_CHANNEL_0
