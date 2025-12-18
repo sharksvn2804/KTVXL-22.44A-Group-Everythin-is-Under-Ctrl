@@ -1,4 +1,4 @@
-// ==== Includes ====
+// Include Files:
 #include <stdio.h>
 #include <math.h>
 #include <esp_rmaker_core.h>
@@ -16,43 +16,36 @@
 #include "driver/gpio.h"
 #include "esp_timer.h"
 
-// ==== Log Tag ====
+// Log Tag:
 static const char *TAG = "MQ2_APP";
 
-// =========================================================
-//                  RainMaker Device + Params
-// =========================================================
+// Rainmaker device and parameters:
 static esp_rmaker_device_t *dev_mq2;
 static esp_rmaker_param_t *param_ppm;
 static esp_rmaker_param_t *param_pm25;
 static esp_rmaker_param_t *param_power;
 static esp_rmaker_param_t *param_ratio;
 static esp_rmaker_param_t *param_status;
-static esp_rmaker_param_t *param25_status;   
+static esp_rmaker_param_t *param25_status;  
+static esp_rmaker_param_t *most_polluted_ppm; 
 
-// =========================================================
-//                     Constants & Globals
-// =========================================================
+// Constants:
 #define DEFAULT_POWER          false
 #define BUFFER_SIZE            5
 #define READ_INTERVAL_MS       200
 #define REPORT_INTERVAL_MS     1000
 static volatile bool alert_mode_enabled = false;
 static QueueHandle_t btn_evt_queue = NULL;
-
 // CO Buffer
 static float ppm_buf[BUFFER_SIZE] = {0};
 static int ppm_index = 0;
 static int ppm_count = 0;
-
-// NEW: PM2.5 Buffer
+// PM2.5 buffer:
 static float pm25_buf[BUFFER_SIZE] = {0};
 static int pm25_index = 0;
 static int pm25_count = 0;
 
-// =========================================================
-//            RainMaker Bulk Write Callback
-// =========================================================
+// Rainmaker bulk write callback:
 static esp_err_t bulk_write_cb(const esp_rmaker_device_t *device,
         const esp_rmaker_param_write_req_t req[], uint8_t count,
         void *priv_data, esp_rmaker_write_ctx_t *ctx) {
@@ -69,14 +62,13 @@ static esp_err_t bulk_write_cb(const esp_rmaker_device_t *device,
     return ESP_OK;
 }
 
-// =========================================================
-//                         Button ISR
-// =========================================================
+// Button ISR:
 static void IRAM_ATTR button_isr(void *arg) {
     uint32_t pin = (uint32_t)arg;
     xQueueSendFromISR(btn_evt_queue, &pin, NULL);
 }
 
+// Button task:
 static void button_task(void *arg) {
     uint32_t pin;
     TickType_t last_tick = 0;
@@ -95,9 +87,7 @@ static void button_task(void *arg) {
     }
 }
 
-// =========================================================
-//          MQ2 + GP2Y Sampling Timer (200ms)
-// =========================================================
+// MQ2 and PM2.5 measuring timer (200ms in average):
 static void measuring_timer_cb(void *arg) {
     // Read CO PPM
     float ppm = read_CO_ppm();
@@ -113,12 +103,10 @@ static void measuring_timer_cb(void *arg) {
         pm25_count++;
 }
 
-// =========================================================
-//           LCD + Cloud Reporting Timer (1s)
-// =========================================================
+// LCD + RainMaker reporting timer (1s in average):
 static void report_timer_cb(void *arg) {
     if (ppm_count == 0) return;
-    // ---- Average CO PPM ----
+    // Average CO PPM:
     float sum_ppm = 0;
     for (int i = 0; i < ppm_count; i++) sum_ppm += ppm_buf[i];
     float avg_ppm = sum_ppm / ppm_count;
@@ -126,7 +114,7 @@ static void report_timer_cb(void *arg) {
     float sum_pm25 = 0;
     for (int i = 0; i < pm25_count; i++) sum_pm25 += pm25_buf[i];
     float avg_pm25 = (pm25_count > 0) ? (sum_pm25 / pm25_count) : 0;
-    // ---- LCD update ----
+    // LCD update:
     // Nồng độ CO:
     char buf[32];
     lcd_put_cursor(0, 0);
@@ -134,24 +122,19 @@ static void report_timer_cb(void *arg) {
     lcd_put_cursor(0, 4);
     snprintf(buf, sizeof(buf), "%.2f    ", avg_ppm);
     lcd_send_string(buf);
-    // NEW: Nồng độ PM2.5:
+    // Nồng độ PM2.5:   
     char bufpm25[32];
     lcd_put_cursor(1, 0);
     lcd_send_string("PM2.5: ");
     lcd_put_cursor(1, 7);
     snprintf(bufpm25, sizeof(bufpm25), "%.3f    ", avg_pm25);
     lcd_send_string(bufpm25);
-    // ---- Compute Rs/R0 ----
+    // Tính toán Rs/R0:
     uint16_t adc = adc1_get_raw(MQ2_CHANNEL);
     float Vout = (adc / 4095.0f) * 3.3f;
     float RS = RL_VALUE * (3.3f - Vout) / Vout;
     float ratio = RS / get_R0();
-    // ---- Update RainMaker ----
-    esp_rmaker_param_update_and_report(param_ppm,   esp_rmaker_float(avg_ppm));
-    esp_rmaker_param_update_and_report(param_pm25,  esp_rmaker_float(avg_pm25));  // NEW
-    esp_rmaker_param_update_and_report(param_power, esp_rmaker_bool(alert_mode_enabled));
-    esp_rmaker_param_update_and_report(param_ratio, esp_rmaker_float(ratio));
-    // Status message (CO-based + PM2.5-based)
+    // Message status CO:
     char status_msg[64];
     int co_level = 0;
     if (avg_ppm < 4.5) {
@@ -170,7 +153,7 @@ static void report_timer_cb(void *arg) {
         snprintf(status_msg, sizeof(status_msg), "CO rất xấu! NGUY HIỂM!");
         co_level = 4;
     }
-    // NEW: PM2.5 Status Message
+    // PM2.5 Status Message
     char status2_msg[64];
     int pm_level = 0;
     if (avg_pm25 < 12) {
@@ -190,32 +173,56 @@ static void report_timer_cb(void *arg) {
         pm_level = 4;
     }
     // Cảnh báo LED đỏ dựa trên mức độ nguy hiểm cao hơn:
+    static int last_danger = -1;
     int danger = (co_level > pm_level) ? co_level : pm_level;
     if (alert_mode_enabled) {
-        int duty_table[4] = {0, 255/16, 255/8, 255/4, 255};
+        int duty_table[5] = {0, 255/32, 255/16, 255/8, 255};
+        // Set duty cycle:
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty_table[danger]);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+        // Buzz cảnh báo nếu mức độ nguy hiểm cao:
         if (danger >= 3) {
+            // Pop up alert in RainMaker:
+            if (last_danger < 3) {
+                esp_rmaker_raise_alert (
+                    (co_level > pm_level) ?
+                    "Nồng độ CO vượt mức cho phép! Hãy chú ý sức khỏe!" :
+                    "Nồng độ PM2.5 vượt mức cho phép! Hãy chú ý sức khỏe!"
+                );
+            }
             gpio_set_level(BUZZ_PIN, 1); // Bật Buzz
-            esp_rom_delay_us(100000);
+            esp_rom_delay_us(50000);
             gpio_set_level(BUZZ_PIN, 0); // Tắt Buzz
-            esp_rom_delay_us(100000);
+            esp_rom_delay_us(50000);
         } else {
             gpio_set_level(BUZZ_PIN, 0); // Tắt Buzz
         }
+        last_danger = danger;
     } else {
+        // Tắt hết:
         ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0);
         ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
         gpio_set_level(BUZZ_PIN, 0);
+        last_danger = -1;
     }
-    // Cập nhật trạng thái CO và PM2.5:
+    // Kiểm tra cái nào ô nhiễm:
+    char polluted_msg[64];
+    if (co_level > pm_level) {
+        snprintf(polluted_msg, sizeof(polluted_msg), "Khí CO: %.2f ppm", avg_ppm);
+    } else {
+        snprintf(polluted_msg, sizeof(polluted_msg), "Bụi PM2.5: %.3f mg/m3", avg_pm25);
+    }
+    // Update RainMaker params:
+    esp_rmaker_param_update_and_report(param_ppm,   esp_rmaker_float(avg_ppm));
+    esp_rmaker_param_update_and_report(param_pm25,  esp_rmaker_float(avg_pm25));  // NEW
+    esp_rmaker_param_update_and_report(param_power, esp_rmaker_bool(alert_mode_enabled));
+    esp_rmaker_param_update_and_report(param_ratio, esp_rmaker_float(ratio));
     esp_rmaker_param_update_and_report(param_status, esp_rmaker_str(status_msg));
     esp_rmaker_param_update_and_report(param25_status, esp_rmaker_str(status2_msg));
+    esp_rmaker_param_update_and_report(most_polluted_ppm, esp_rmaker_str(polluted_msg));
 }
 
-// =========================================================
-//                        MAIN
-// =========================================================
+// Main Application:
 void app_main(void) {
     // Bắt đầu ứng dụng:
     ESP_LOGI(TAG, "Starting MQ2 + PM2.5 + LCD + LED + RainMaker");
@@ -247,16 +254,21 @@ void app_main(void) {
                     "Trạng thái CO:", "co_status",
                     esp_rmaker_str("CO an toàn. Không thành vấn đề."),
                     PROP_FLAG_READ);
-    param25_status  = esp_rmaker_param_create(                                          
+    param25_status  = esp_rmaker_param_create(
                     "Trạng thái PM2.5:", "pm25_status",
                     esp_rmaker_str("PM2.5 an toàn. Không thành vấn đề."),
                     PROP_FLAG_READ);
+    most_polluted_ppm = esp_rmaker_param_create(
+                    "Chất ô nhiễm nhất:", "most_polluted",
+                    esp_rmaker_str("Chưa có dữ liệu."),
+                    PROP_FLAG_READ);
     esp_rmaker_device_add_param(dev_mq2, param_ppm);
-    esp_rmaker_device_add_param(dev_mq2, param_pm25);                                   
+    esp_rmaker_device_add_param(dev_mq2, param_pm25);
     esp_rmaker_device_add_param(dev_mq2, param_power);
     esp_rmaker_device_add_param(dev_mq2, param_ratio);
     esp_rmaker_device_add_param(dev_mq2, param_status);
-    esp_rmaker_device_add_param(dev_mq2, param25_status);                               
+    esp_rmaker_device_add_param(dev_mq2, param25_status);
+    esp_rmaker_device_add_param(dev_mq2, most_polluted_ppm);
     // ---- Start RainMaker ----
     esp_rmaker_ota_enable_default();
     esp_rmaker_start();
