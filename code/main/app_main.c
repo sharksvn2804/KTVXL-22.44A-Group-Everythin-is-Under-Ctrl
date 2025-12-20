@@ -271,7 +271,7 @@ static void report_timer_cb(void *arg) {
         // Cache values:
         last_reported.ppm = avg_ppm;
         last_reported.pm25 = avg_pm25;
-        last_reported.ratio = ratio;
+        last_reported.ratio = ratio; 
         last_reported.co_level = co_level;
         last_reported.pm_level = pm_level;
         strcpy(last_reported.status, status_msg);
