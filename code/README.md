@@ -1,23 +1,17 @@
-# Temperature Sensor Example
+Chủ đề nhóm: Máy đo CO và bụi
 
-## Build and Flash firmware
+Nhóm sinh viên thực hiện: Trần Quang Khánh (22KTMT1), Lê Xuân Nam (22KTMT1), Hồ Anh Nguyên (22KTMT1), Phan Lê Minh (22KTMT2)
 
-Follow the ESP RainMaker Documentation [Get Started](https://rainmaker.espressif.com/docs/get-started.html) section to build and flash this firmware. Just note the path of this example.
+Giảng viên hướng dẫn: Ths. Hồ Viết Việt
 
-## What to expect in this example?
+Thành phần phần cứng: ESP32-C3 (vi xử lí trung tâm), cảm biến khí CO MQ2, cảm biến bụi PM2.5 GP2Y1010AU0F, LCD I2C, nút nhấn, tụ 220uF, điện trở hạn dòng, LED đơn (xanh và đỏ).
 
-- This example uses esp timer and the RGB LED on the ESP32-S2-Saola-1/ESP32-C3-DevKitC board to demonstrate a temperature sensor.
-- The temperature value is changed by 0.5 every minute.
-- It starts at some default value (25.0) and goes on increasing till 99.5. Then it starts reducing till it comes to 0.5. The cycle keeps repeating.
-- The LED color indicates the temperature.
-- LED hue changes from 200 (bluish) to 0 (reddish) as the temperature increases from 0.5 to 99.5.
-- You can check the temperature changes in the phone app.
+Hướng dẫn sử dụng (dành cho các thành viên trong nhóm):
+- Bước 1: Tải về và giải nén.
+- Bước 2: Đổi tên folder code thành example temperature_sensor (lí do: code này thay đổi từ 1 example có sẵn của ESP Rainmaker), sau đó copy folder đó.
+- Bước 3: Tìm folder esp-rainmaker và vào folder example.
+- Bước 4: Paste folder đó vào (nhớ chọn chế độ replace).
 
-### LED not working?
+Ứng dụng: cảnh báo ngạt khí, báo cháy,...
 
-The ESP32-S2-Saola-1 board has the RGB LED connected to GPIO 18. However, a few earlier boards may have it on GPIO 17. Please use `CONFIG_WS2812_LED_GPIO` to set the appropriate value.
-
-### Reset to Factory
-
-Press and hold the BOOT button for more than 3 seconds to reset the board to factory defaults. You will have to provision the board again to use it.
-
+Tags: GPIO, ADC, I2C, timer interrupt, hardware interrupt, PWM, wifi, bluetooth, NVS, ESP rainmaker, MQTT
