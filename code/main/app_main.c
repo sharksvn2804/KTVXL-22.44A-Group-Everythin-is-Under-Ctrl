@@ -147,7 +147,6 @@ static inline void buzzer_trigger(uint32_t duration_us) {
 // LCD + RainMaker reporting timer (1s in average):
 static void report_timer_cb(void *arg) {
     if (ppm_count == 0) return;
-    
     // Average CO PPM:
     float sum_ppm = 0;
     for (int i = 0; i < ppm_count; i++) sum_ppm += ppm_buf[i];
@@ -196,7 +195,7 @@ static void report_timer_cb(void *arg) {
     // PM2.5 Status Message
     char status2_msg[64];
     int pm_level = 0;
-    if (avg_pm25 < 12) {
+    if (avg_pm25 < 9) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 tốt.");
         pm_level = 0;
     } else if (avg_pm25 < 35.4) {
@@ -205,7 +204,7 @@ static void report_timer_cb(void *arg) {
     } else if (avg_pm25 < 55.4) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 trung bình.");
         pm_level = 2;
-    } else if (avg_pm25 < 150.4) {
+    } else if (avg_pm25 < 125.5) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 kém.");
         pm_level = 3;
     } else {
