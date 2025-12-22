@@ -141,20 +141,25 @@ static inline void buzzer_trigger(uint32_t duration_us) {
         gpio_set_level(BUZZ_PIN, 1);
         buzzer_active = true;
         buzzer_end_time = esp_timer_get_time() + duration_us;
+    } else {
+        gpio_set_level(BUZZ_PIN, 0);
     }
 }
 
 // LCD + RainMaker reporting timer (1s in average):
 static void report_timer_cb(void *arg) {
     if (ppm_count == 0) return;
+    
     // Average CO PPM:
     float sum_ppm = 0;
     for (int i = 0; i < ppm_count; i++) sum_ppm += ppm_buf[i];
     float avg_ppm = sum_ppm / ppm_count;
+    
     // Average PM2.5
     float sum_pm25 = 0;
     for (int i = 0; i < pm25_count; i++) sum_pm25 += pm25_buf[i];
     float avg_pm25 = (pm25_count > 0) ? (sum_pm25 / pm25_count) : 0;
+    
     // LCD update:
     char buf[32];
     char bufpm25[32];
@@ -168,11 +173,13 @@ static void report_timer_cb(void *arg) {
     lcd_send_string("PM2.5: ");
     lcd_put_cursor(1, 7);
     lcd_send_string(bufpm25);
+    
     // Tính toán Rs/R0:
     uint16_t adc = adc1_get_raw(MQ2_CHANNEL);
     float Vout = (adc / 4095.0f) * 3.3f;
     float RS = RL_VALUE * (3.3f - Vout) / Vout;
     float ratio = RS / get_R0();
+    
     // Message status CO:
     char status_msg[64];
     int co_level = 0;
@@ -192,6 +199,7 @@ static void report_timer_cb(void *arg) {
         snprintf(status_msg, sizeof(status_msg), "CO rất xấu! NGUY HIỂM!");
         co_level = 4;
     }
+    
     // PM2.5 Status Message
     char status2_msg[64];
     int pm_level = 0;
@@ -211,6 +219,7 @@ static void report_timer_cb(void *arg) {
         snprintf(status2_msg, sizeof(status2_msg), "PM2.5 rất xấu!");
         pm_level = 4;
     }
+    
     // LED warning + Buzzer (non-blocking):
     int danger = (co_level > pm_level) ? co_level : pm_level;
     if (alert_mode_enabled) {
@@ -260,6 +269,7 @@ static void report_timer_cb(void *arg) {
         strcmp(last_reported.status, status_msg) != 0 ||
         strcmp(last_reported.status2, status2_msg) != 0) {
         
+        // Update all parameters at once (cùng lúc):
         esp_rmaker_param_update_and_report(param_ppm, esp_rmaker_float(avg_ppm));
         esp_rmaker_param_update_and_report(param_pm25, esp_rmaker_float(avg_pm25));
         esp_rmaker_param_update_and_report(param_ratio, esp_rmaker_float(ratio));
@@ -270,7 +280,7 @@ static void report_timer_cb(void *arg) {
         // Cache values:
         last_reported.ppm = avg_ppm;
         last_reported.pm25 = avg_pm25;
-        last_reported.ratio = ratio; 
+        last_reported.ratio = ratio;
         last_reported.co_level = co_level;
         last_reported.pm_level = pm_level;
         strcpy(last_reported.status, status_msg);
